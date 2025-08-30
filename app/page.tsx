@@ -1,22 +1,29 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import { getEdges, seedVertices } from "./graph-helpers/utils";
+import { useRef, useEffect, useCallback } from "react";
+import { getEdges, seedVertices, addVertex } from "./graph-helpers/utils";
 import { drawVertex, drawEdge } from "./graph-helpers/draw";
 import { type Vertex, type Edge } from "./graph-helpers/types";
 
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
   const edgeProximity = 50;
+  const vertexRadius = 4;
+  const numSeededVertices = 100;
+
   const testV: Vertex[] = [];
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    canvas.addEventListener("click", handleClick);
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    seedVertices(testV, 100, 4, 400, 400);
+    seedVertices(testV, numSeededVertices, vertexRadius, 400, 400);
 
     for (let i = 0; i < testV.length; i++) {
       drawVertex(testV[i], ctx);
@@ -27,6 +34,11 @@ export default function Home() {
     for (let i = 0; i < testE.length; i++) {
       drawEdge(testE[i], ctx);
     }
+  }, []);
+
+  const handleClick = useCallback((event: MouseEvent) => {
+    console.log(event);
+    addVertex(testV, { x: event.offsetX, y: event.offsetY, r: vertexRadius });
   }, []);
 
   return (

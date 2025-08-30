@@ -35,3 +35,7 @@ export function seedVertices(
     });
   }
 }
+
+export function addVertex(verticesArray: Vertex[], newV: Vertex) {
+  verticesArray.push(newV);
+}
