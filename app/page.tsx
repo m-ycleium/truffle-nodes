@@ -5,7 +5,7 @@ import { useRef, useEffect } from "react";
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const edgeProximity = 500;
+  const edgeProximity = 80;
 
   type Vertex = {
     x: number;
@@ -51,18 +51,31 @@ export default function Home() {
     ctx.stroke();
   }
 
-  const testV: Vertex[] = [
-    { x: 10, y: 10, r: 10 },
-    { x: 90, y: 10, r: 10 },
-    { x: 100, y: 100, r: 10 },
-    { x: 200, y: 200, r: 10 },
-  ];
+  const testV: Vertex[] = [];
+
+  function seedVertices(
+    verticesArray: Vertex[],
+    numVertices: number,
+    r: number,
+    maxX: number,
+    maxY: number
+  ) {
+    for (let i = 0; i < numVertices; i++) {
+      verticesArray.push({
+        x: Math.random() * maxX,
+        y: Math.random() * maxY,
+        r: r,
+      });
+    }
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    seedVertices(testV, 100, 4, 400, 400);
 
     for (let i = 0; i < testV.length; i++) {
       drawVertex(testV[i], ctx);
