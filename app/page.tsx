@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useCallback } from "react";
 import { getEdges, seedVertices, addVertex } from "./graph-helpers/utils";
-import { drawVertex, drawEdge } from "./graph-helpers/draw";
+import { drawVertex, drawEdge, drawGraph } from "./graph-helpers/draw";
 import { type Vertex, type Edge } from "./graph-helpers/types";
 
 export default function Home() {
@@ -24,20 +24,12 @@ export default function Home() {
     if (!ctx) return;
 
     seedVertices(testV, numSeededVertices, vertexRadius, 400, 400);
-
-    for (let i = 0; i < testV.length; i++) {
-      drawVertex(testV[i], ctx);
-    }
-
     let testE = getEdges(testV, edgeProximity);
 
-    for (let i = 0; i < testE.length; i++) {
-      drawEdge(testE[i], ctx);
-    }
+    drawGraph(testV, testE, ctx);
   }, []);
 
   const handleClick = useCallback((event: MouseEvent) => {
-    console.log(event);
     addVertex(testV, { x: event.offsetX, y: event.offsetY, r: vertexRadius });
   }, []);
 

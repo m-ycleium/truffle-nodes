@@ -12,3 +12,17 @@ export function drawEdge(e: Edge, ctx: CanvasRenderingContext2D) {
   ctx.lineTo(e.v2.x, e.v2.y);
   ctx.stroke();
 }
+
+export function drawGraph(
+  vertices: Vertex[],
+  edges: Edge[],
+  ctx: CanvasRenderingContext2D
+) {
+  for (let i = 0; i < vertices.length; i++) {
+    drawVertex(vertices[i], ctx);
+  }
+
+  for (let i = 0; i < edges.length; i++) {
+    drawEdge(edges[i], ctx);
+  }
+}
