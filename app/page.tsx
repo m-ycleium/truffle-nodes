@@ -35,12 +35,11 @@ export default function Home() {
 
     const canvas = canvasRef.current;
     if (!canvas) return;
-    canvas.addEventListener("mousedown", handleMouseDown);
-    canvas.addEventListener("mouseup", handleMouseUp);
-    canvas.addEventListener("mousemove", handleMouseMove);
-    canvas.addEventListener("click", handleClick);
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    addCanvasEventListeners(canvas);
 
     const animate = (timestamp: DOMHighResTimeStamp) => {
       animationFrameId.current = requestAnimationFrame(animate);
@@ -60,6 +59,13 @@ export default function Home() {
       }
     };
   }, []);
+
+  function addCanvasEventListeners(canvas: HTMLCanvasElement) {
+    canvas.addEventListener("mousedown", handleMouseDown);
+    canvas.addEventListener("mouseup", handleMouseUp);
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("click", handleClick);
+  }
 
   const handleClick = useCallback(
     (event: MouseEvent) => {
