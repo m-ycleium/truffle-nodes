@@ -1,13 +1,14 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import {
   getEdges,
   seedVertices,
   addVertex,
   getCollidingVertexIndex,
+  noiseStep,
 } from "./graph-helpers/utils";
-import { drawVertex, drawEdge, drawGraph } from "./graph-helpers/draw";
+import { drawGraph } from "./graph-helpers/draw";
 import { type Vertex, type Edge } from "./graph-helpers/types";
 import gsap from "gsap";
 
@@ -15,11 +16,11 @@ export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameId = useRef<number | null>(null);
 
-  const edgeProximity = 50;
+  const edgeProximity = 100;
   const vertexRadius = 4;
   const numSeededVertices = 100;
   const vertexClickRadius = 10;
-  const dragDelay = 0.22;
+  const dragDelay = 0.48;
 
   let V: Vertex[] = [];
   let E: Edge[] = [];
@@ -47,6 +48,7 @@ export default function Home() {
       // update edges every frame
       E = getEdges(V, edgeProximity);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      noiseStep(V, timestamp);
       drawGraph(V, E, ctx);
     };
 
@@ -93,6 +95,7 @@ export default function Home() {
     [V]
   );
 
+  // todo fix bug where adds a node if you are dragging and the vertex hasn't caught up
   const handleMouseUp = useCallback(() => {
     draggingVIndexRef.current = -1;
   }, []);

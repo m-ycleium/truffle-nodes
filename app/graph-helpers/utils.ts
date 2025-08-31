@@ -1,4 +1,7 @@
 import { type Vertex, type Edge } from "./types";
+import { createNoise2D } from "simplex-noise";
+
+export const noise2D = createNoise2D();
 
 export function getVertexDistance(v1: Vertex, v2: Vertex) {
   return Math.sqrt((v2.x - v1.x) ** 2 + (v2.y - v1.y) ** 2);
@@ -33,6 +36,16 @@ export function seedVertices(
       y: Math.random() * maxY,
       r: r,
     });
+  }
+}
+
+export function noiseStep(verticesArray: Vertex[], time: number) {
+  console.log("time", time);
+
+  for (let i = 0; i < verticesArray.length; i++) {
+    let curV = verticesArray[i];
+    curV.x += noise2D(i, time / 3200) / 4;
+    curV.y += noise2D(verticesArray.length - i, time / 3200) / 4;
   }
 }
 
