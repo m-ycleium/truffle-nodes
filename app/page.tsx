@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import {
   getEdges,
   seedVertices,
@@ -17,18 +17,24 @@ export default function Home() {
   const edgeProximity = 50;
   const vertexRadius = 4;
   const numSeededVertices = 100;
-  const vertexClickRadius = 20;
+  const vertexClickRadius = 10;
 
-  let testV: Vertex[] = [];
-  let testE: Edge[] = [];
+  let V: Vertex[] = [];
+  let E: Edge[] = [];
+
+  // ref to avoid rerendering canvas
+  const draggingVIndexRef = useRef<number>(-1);
 
   useEffect(() => {
     // init
-    seedVertices(testV, numSeededVertices, vertexRadius, 400, 400);
-    testE = getEdges(testV, edgeProximity);
+    seedVertices(V, numSeededVertices, vertexRadius, 400, 400);
+    E = getEdges(V, edgeProximity);
 
     const canvas = canvasRef.current;
     if (!canvas) return;
+    canvas.addEventListener("mousedown", handleMouseDown);
+    canvas.addEventListener("mouseup", handleMouseUp);
+    canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("click", handleClick);
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -37,9 +43,9 @@ export default function Home() {
       animationFrameId.current = requestAnimationFrame(animate);
 
       // update edges every frame
-      testE = getEdges(testV, edgeProximity);
+      E = getEdges(V, edgeProximity);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawGraph(testV, testE, ctx);
+      drawGraph(V, E, ctx);
     };
 
     animationFrameId.current = requestAnimationFrame(animate);
@@ -54,20 +60,49 @@ export default function Home() {
   const handleClick = useCallback(
     (event: MouseEvent) => {
       const collidingVertexIndex = getCollidingVertexIndex(
-        testV,
+        V,
         { x: event.offsetX, y: event.offsetY },
         vertexClickRadius
       );
 
       if (collidingVertexIndex === -1) {
-        addVertex(testV, {
+        addVertex(V, {
           x: event.offsetX,
           y: event.offsetY,
           r: vertexRadius,
         });
       }
     },
-    [testV]
+    [V]
+  );
+
+  const handleMouseDown = useCallback(
+    (event: MouseEvent) => {
+      const collidingVertexIndex = getCollidingVertexIndex(
+        V,
+        { x: event.offsetX, y: event.offsetY },
+        vertexClickRadius
+      );
+
+      if (collidingVertexIndex !== -1) {
+        draggingVIndexRef.current = collidingVertexIndex;
+      }
+    },
+    [V]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    draggingVIndexRef.current = -1;
+  }, []);
+
+  const handleMouseMove = useCallback(
+    (event: MouseEvent) => {
+      if (draggingVIndexRef.current !== -1) {
+        V[draggingVIndexRef.current].x = event.offsetX;
+        V[draggingVIndexRef.current].y = event.offsetY;
+      }
+    },
+    [V]
   );
 
   return (
