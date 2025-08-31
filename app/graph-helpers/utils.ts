@@ -24,14 +24,14 @@ export function getEdges(vertices: Vertex[], minProximity: number) {
 }
 
 export function seedVertices(
-  verticesArray: Vertex[],
+  vertices: Vertex[],
   numVertices: number,
   r: number,
   maxX: number,
   maxY: number
 ) {
   for (let i = 0; i < numVertices; i++) {
-    verticesArray.push({
+    vertices.push({
       x: Math.random() * maxX,
       y: Math.random() * maxY,
       r: r,
@@ -39,29 +39,27 @@ export function seedVertices(
   }
 }
 
-export function noiseStep(verticesArray: Vertex[], time: number) {
-  console.log("time", time);
-
-  for (let i = 0; i < verticesArray.length; i++) {
-    let curV = verticesArray[i];
+export function noiseStep(vertices: Vertex[], time: number) {
+  for (let i = 0; i < vertices.length; i++) {
+    let curV = vertices[i];
     curV.x += noise2D(i, time / 3200) / 4;
-    curV.y += noise2D(verticesArray.length - i, time / 3200) / 4;
+    curV.y += noise2D(vertices.length - i, time / 3200) / 4;
   }
 }
 
-export function addVertex(verticesArray: Vertex[], newV: Vertex) {
-  verticesArray.push(newV);
+export function addVertex(vertices: Vertex[], newV: Vertex) {
+  vertices.push(newV);
 }
 
 // return index of first vertex colliding with point or -1
 export function getCollidingVertexIndex(
-  verticesArray: Vertex[],
+  vertices: Vertex[],
   point: { x: number; y: number },
   tolerance: number
 ) {
   let index = -1;
-  for (let i = 0; i < verticesArray.length; i++) {
-    let curV = verticesArray[i];
+  for (let i = 0; i < vertices.length; i++) {
+    let curV = vertices[i];
     if (
       getVertexDistance(curV, { x: point.x, y: point.y, r: 0 }) <= tolerance
     ) {
@@ -71,3 +69,11 @@ export function getCollidingVertexIndex(
   }
   return index;
 }
+
+// export function getVertexGravityPoint(
+//   vertices: Vertex[],
+//   edges: Edge[],
+//   vertexIndex: number
+// ) {
+//     for
+// }

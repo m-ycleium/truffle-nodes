@@ -18,7 +18,7 @@ export default function Home() {
 
   const edgeProximity = 100;
   const vertexRadius = 4;
-  const numSeededVertices = 100;
+  const numSeededVertices = 20;
   const vertexClickRadius = 10;
   const dragDelay = 0.48;
 
@@ -48,7 +48,7 @@ export default function Home() {
       // update edges every frame
       E = getEdges(V, edgeProximity);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      noiseStep(V, timestamp);
+      //noiseStep(V, timestamp);
       drawGraph(V, E, ctx);
     };
 
