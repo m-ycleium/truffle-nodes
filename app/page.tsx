@@ -9,6 +9,7 @@ import {
 } from "./graph-helpers/utils";
 import { drawVertex, drawEdge, drawGraph } from "./graph-helpers/draw";
 import { type Vertex, type Edge } from "./graph-helpers/types";
+import gsap from "gsap";
 
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -18,6 +19,7 @@ export default function Home() {
   const vertexRadius = 4;
   const numSeededVertices = 100;
   const vertexClickRadius = 10;
+  const dragDelay = 0.22;
 
   let V: Vertex[] = [];
   let E: Edge[] = [];
@@ -27,7 +29,7 @@ export default function Home() {
 
   useEffect(() => {
     // init
-    seedVertices(V, numSeededVertices, vertexRadius, 400, 400);
+    seedVertices(V, numSeededVertices, vertexRadius, 500, 500);
     E = getEdges(V, edgeProximity);
 
     const canvas = canvasRef.current;
@@ -98,8 +100,11 @@ export default function Home() {
   const handleMouseMove = useCallback(
     (event: MouseEvent) => {
       if (draggingVIndexRef.current !== -1) {
-        V[draggingVIndexRef.current].x = event.offsetX;
-        V[draggingVIndexRef.current].y = event.offsetY;
+        gsap.to(V[draggingVIndexRef.current], {
+          duration: dragDelay,
+          x: event.offsetX,
+          y: event.offsetY,
+        });
       }
     },
     [V]
@@ -108,8 +113,8 @@ export default function Home() {
   return (
     <canvas
       ref={canvasRef}
-      width={400}
-      height={400}
+      width={500}
+      height={500}
       style={{ border: "1px solid black" }}
     ></canvas>
   );
