@@ -1,8 +1,10 @@
 "use client";
 
 export default `
+uniform vec2 iResolution;
+
 void main() {
-  vec2 fragCoord = glFragCoord.xy;
+  vec2 fragCoord = gl_FragCoord.xy;
   vec4 fragColor;
 
   vec2 uv = fragCoord.xy / iResolution.xy;

@@ -8,6 +8,7 @@ import {
   getCollidingVertexIndex,
   noiseStep,
 } from "./graph-helpers/utils";
+import ShaderCanvas from "./shader-helpers/shaderCanvas";
 import { drawGraph } from "./graph-helpers/draw";
 import { type Vertex, type Edge } from "./graph-helpers/types";
 import gsap from "gsap";
@@ -120,11 +121,14 @@ export default function Home() {
   );
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={500}
-      height={500}
-      style={{ border: "1px solid black" }}
-    ></canvas>
+    <>
+      <canvas
+        ref={canvasRef}
+        width={500}
+        height={500}
+        style={{ border: "1px solid black" }}
+      ></canvas>
+      <ShaderCanvas></ShaderCanvas>
+    </>
   );
 }
