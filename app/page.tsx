@@ -1,7 +1,12 @@
 "use client";
 
 import { useRef, useEffect, useCallback } from "react";
-import { getEdges, seedVertices, addVertex } from "./graph-helpers/utils";
+import {
+  getEdges,
+  seedVertices,
+  addVertex,
+  getCollidingVertexIndex,
+} from "./graph-helpers/utils";
 import { drawVertex, drawEdge, drawGraph } from "./graph-helpers/draw";
 import { type Vertex, type Edge } from "./graph-helpers/types";
 
@@ -12,6 +17,7 @@ export default function Home() {
   const edgeProximity = 50;
   const vertexRadius = 4;
   const numSeededVertices = 100;
+  const vertexClickRadius = 20;
 
   let testV: Vertex[] = [];
   let testE: Edge[] = [];
@@ -47,7 +53,19 @@ export default function Home() {
 
   const handleClick = useCallback(
     (event: MouseEvent) => {
-      addVertex(testV, { x: event.offsetX, y: event.offsetY, r: vertexRadius });
+      const collidingVertexIndex = getCollidingVertexIndex(
+        testV,
+        { x: event.offsetX, y: event.offsetY },
+        vertexClickRadius
+      );
+
+      if (collidingVertexIndex === -1) {
+        addVertex(testV, {
+          x: event.offsetX,
+          y: event.offsetY,
+          r: vertexRadius,
+        });
+      }
     },
     [testV]
   );

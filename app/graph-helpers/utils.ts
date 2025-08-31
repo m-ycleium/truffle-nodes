@@ -39,3 +39,22 @@ export function seedVertices(
 export function addVertex(verticesArray: Vertex[], newV: Vertex) {
   verticesArray.push(newV);
 }
+
+// return index of first vertex colliding with point or -1
+export function getCollidingVertexIndex(
+  verticesArray: Vertex[],
+  point: { x: number; y: number },
+  tolerance: number
+) {
+  let index = -1;
+  for (let i = 0; i < verticesArray.length; i++) {
+    let curV = verticesArray[i];
+    if (
+      getVertexDistance(curV, { x: point.x, y: point.y, r: 0 }) <= tolerance
+    ) {
+      index = i;
+      break;
+    }
+  }
+  return index;
+}
