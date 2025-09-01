@@ -73,11 +73,3 @@ export function getCollidingVertexIndex(
   }
   return index;
 }
-
-// export function getVertexGravityPoint(
-//   vertices: Vertex[],
-//   edges: Edge[],
-//   vertexIndex: number
-// ) {
-//     for
-// }

@@ -34,6 +34,8 @@ export default function Home() {
   // ref to avoid rerendering canvas
   const draggingVIndexRef = useRef<number>(-1);
   const isDraggingRef = useRef<boolean>(false);
+
+  // todo: properly use this to improve delete vertex ux
   const dragTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {

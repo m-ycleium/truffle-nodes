@@ -87,13 +87,6 @@ function ShaderCanvas({ mousePosRef, VRef, maxPoints }: ShaderCanvasProps) {
     const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
-    // todo: autoscale canvas
-    const setSize = () => {
-      renderer.setPixelRatio(dpr);
-      renderer.setSize(500, 500);
-      material.uniforms.iResolution.value.set();
-    };
-
     const animate = (timestamp: DOMHighResTimeStamp) => {
       animationFrameId.current = requestAnimationFrame(animate);
       material.uniforms.iTime.value = timestamp / 1000;
