@@ -1,13 +1,16 @@
 import { type Vertex, type Edge, GravityBasin } from "./types";
 import { vertexRadius, subGraphVertexRadius, anchorRadius } from "../page";
 
-export const graphColor = "#FFFFFF";
-export const subGraphColor = "#00FFFF";
-export const bridgeColor = "#CCFFFF";
+export const baseColor = "#FFFFFF99";
+export const anchorColor = "#FFFFFF";
+export const subGraphColor = "#FFFFFF66";
+export const bridgeColor = "#FFFFFF22";
 
 export function drawVertex(v: Vertex, ctx: CanvasRenderingContext2D) {
   if (v.r === vertexRadius) {
-    ctx.fillStyle = graphColor;
+    ctx.fillStyle = baseColor;
+  } else if (v.r === anchorRadius) {
+    ctx.fillStyle = anchorColor;
   } else {
     ctx.fillStyle = subGraphColor;
   }
@@ -26,7 +29,7 @@ export function drawEdge(e: Edge, ctx: CanvasRenderingContext2D) {
   ) {
     ctx.strokeStyle = bridgeColor;
   } else {
-    ctx.strokeStyle = graphColor;
+    ctx.strokeStyle = baseColor;
   }
 
   ctx.beginPath();
@@ -39,7 +42,7 @@ export function drawGravityBasin(
   g: GravityBasin,
   ctx: CanvasRenderingContext2D
 ) {
-  ctx.strokeStyle = graphColor;
+  ctx.strokeStyle = baseColor;
   ctx.beginPath();
   ctx.arc(g.x, g.y, g.r, 0, 2 * Math.PI);
   ctx.stroke();
@@ -63,6 +66,7 @@ export function drawGraph(
     drawEdge(edges[i], ctx);
   }
   for (let i = 0; i < vertices.length; i++) {
-    drawVertex(vertices[i], ctx);
+    // draw backwards to alwasy put root on top
+    drawVertex(vertices[vertices.length - 1 - i], ctx);
   }
 }

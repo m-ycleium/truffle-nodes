@@ -55,11 +55,12 @@ export function noiseStep(vertices: Vertex[], time: number) {
   for (let i = 0; i < vertices.length; i++) {
     let curV = vertices[i];
     if (curV.r === anchorRadius) continue;
-    curV.x += noise2D(i, time / 3200) / 4;
-    curV.y += noise2D(vertices.length - i, time / 3200) / 4;
+    curV.x += noise2D(i, time / 4800) / 4;
+    curV.y += noise2D(vertices.length - i, time / 4800) / 4;
   }
 }
 
+// todo: support multiple basins
 export function gravityStep(vertices: Vertex[], gravityBasin: GravityBasin) {
   let gravityBasinOriginAsVertex: Vertex = {
     x: gravityBasin.x,

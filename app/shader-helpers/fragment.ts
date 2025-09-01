@@ -83,10 +83,18 @@ void main() {
     vec2 vP = (uVertices[i] - 0.5*res) / res.y;
     // account for flipped coordinate space
     vP.y = -vP.y;
-    smoke += 0.2 * displace(p, vP, 0.02).x;
+    smoke += 0.22 * displace(p, vP, 0.01).x;
   }
-    
-  fragColor = vec4(vec3(smoke * 2., smoke, smoke), 1.0);
+
+
+  vec3 glowCenter = displace(p, vec2(0., 0.), 0.05);
+  smoke += 0.4 * glowCenter.x;
+
+  // red  
+  fragColor = vec4(vec3(smoke * 1.9, smoke * .5, smoke * .5), 1.0);
+
+  // green?
+  //fragColor = vec4(vec3(smoke * 1., smoke * .9, smoke * .25), 1.0);
   gl_FragColor = fragColor;
 }
 `;

@@ -14,19 +14,19 @@ import {
   gravityStep,
 } from "./graph-helpers/utils";
 import ShaderCanvas from "./shader-helpers/shaderCanvas";
-import { drawGraph, drawGravityBasins } from "./graph-helpers/draw";
+import { drawGraph } from "./graph-helpers/draw";
 import { type Vertex, type Edge, GravityBasin } from "./graph-helpers/types";
 import gsap from "gsap";
 
 export const edgeProximity = 100;
-export const vertexRadius = 6;
+export const vertexRadius = 4;
 export const anchorRadius = 16;
-export const numSeededVertices = 64;
+export const numSeededVertices = 48;
 export const vertexClickRadius = 40;
 export const dragDelay = 0.48;
 export const maxV = 128;
 export const subGraphSize = 8;
-export const subGraphVertexRadius = 4;
+export const subGraphVertexRadius = 2;
 export const canvasWidth = 500;
 export const canvasHeight = 500;
 
@@ -86,7 +86,6 @@ export default function Home() {
       VRef.current = V;
       clearOffScreenVertices(V, canvasWidth, canvasHeight);
       drawGraph(V, E, ctx);
-      //drawGravityBasins(G, ctx);
     };
 
     animationFrameId.current = requestAnimationFrame(animate);
@@ -113,7 +112,10 @@ export default function Home() {
         vertexClickRadius
       );
 
-      if (collidingVertexIndex !== -1) {
+      if (
+        collidingVertexIndex !== -1 &&
+        V[collidingVertexIndex].r !== anchorRadius
+      ) {
         draggingVIndexRef.current = collidingVertexIndex;
       }
     },
