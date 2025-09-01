@@ -5,8 +5,19 @@ uniform vec2 iResolution;
 uniform float iTime;
 #define OCTAVES 4
 
+float rand(vec2 p) {
+  return fract(sin(dot(p, vec2(11., 32.))) * 11111.);
+}
+
 float noise (vec2 p) {
-  return 0.0;
+  vec2 seed = floor(p);
+  vec2 f = fract(p);
+  vec2 accum = f * f * (3.0 - 2.0 *f);
+  float a = rand(seed + vec2(0,0));
+  float b = rand(seed + vec2(1,0));
+  float c = rand(seed + vec2(0,1));
+  float d = rand(seed + vec2(1,1));
+  return mix(mix(a,b,accum.x), mix(c,d,accum.x), accum.y);
 }
 
 float fbm(vec2 p) {
@@ -31,14 +42,10 @@ void main() {
   
   vec2 p = uv;
 
-  vec2 flow = vec2(fbm(p + iTime), fbm(p - iTime)); 
+  vec2 flow = vec2(fbm(p + iTime * 0.1), fbm(p - iTime * 0.1)); 
+  float smoke = fbm(flow + iTime * 0.1);
 
-
-  float smoke = fbm(flow + iTime);
-
-  //fragColor = vec4(vec3(smoke), 1.0);
-
-  fragColor = vec4(0., 1.0, 0., 1.);
+  fragColor = vec4(vec3(smoke), 1.0);
   gl_FragColor = fragColor;
 }
 `;
