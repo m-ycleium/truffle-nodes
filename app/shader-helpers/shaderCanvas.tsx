@@ -3,6 +3,8 @@
 import { useRef, useEffect, RefObject } from "react";
 import * as THREE from "three";
 import smoke from "./fragment";
+import { type Vertex } from "../graph-helpers/types";
+import { Verify } from "crypto";
 
 const isWebGLAvailable = () => {
   try {
@@ -17,10 +19,11 @@ const isWebGLAvailable = () => {
 };
 
 type ShaderCanvasProps = {
-  mousePosRef: React.RefObject<{ x: number; y: number }>;
+  mousePosRef: RefObject<{ x: number; y: number }>;
+  VRef: RefObject<Vertex[]>;
 };
 
-function ShaderCanvas({ mousePosRef }: ShaderCanvasProps) {
+function ShaderCanvas({ mousePosRef, VRef }: ShaderCanvasProps) {
   const canvasRefs = useRef<HTMLCanvasElement | null>(null);
   const animationFrameId = useRef<number | null>(null);
 

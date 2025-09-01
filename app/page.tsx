@@ -27,6 +27,8 @@ export default function Home() {
   let V: Vertex[] = [];
   let E: Edge[] = [];
 
+  const VRef = useRef<Vertex[]>(V);
+
   // ref to avoid rerendering canvas
   const draggingVIndexRef = useRef<number>(-1);
 
@@ -49,7 +51,8 @@ export default function Home() {
       // update edges every frame
       E = getEdges(V, edgeProximity);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      //noiseStep(V, timestamp);
+      noiseStep(V, timestamp);
+      VRef.current = V;
       drawGraph(V, E, ctx);
     };
 
@@ -143,7 +146,7 @@ export default function Home() {
           position: "absolute",
         }}
       ></canvas>
-      <ShaderCanvas mousePosRef={mousePosRef}></ShaderCanvas>
+      <ShaderCanvas mousePosRef={mousePosRef} VRef={VRef}></ShaderCanvas>
     </div>
   );
 }
