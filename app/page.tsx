@@ -8,7 +8,7 @@ import {
   getCollidingVertexIndex,
   noiseStep,
   deleteVertex,
-  getVertexGravityPoint,
+  getDragPointWithPhysics,
 } from "./graph-helpers/utils";
 import ShaderCanvas from "./shader-helpers/shaderCanvas";
 import { drawGraph } from "./graph-helpers/draw";
@@ -128,11 +128,17 @@ export default function Home() {
       mousePosRef.current = { x: event.offsetX, y: event.offsetY };
       if (draggingVIndexRef.current !== -1) {
         isDraggingRef.current = true;
-        console.log(getVertexGravityPoint(V, E, draggingVIndexRef.current));
+        let dragPoint = { x: event.offsetX, y: event.offsetY };
+        let physicsDragPoint = getDragPointWithPhysics(
+          V,
+          E,
+          draggingVIndexRef.current,
+          dragPoint
+        );
         gsap.to(V[draggingVIndexRef.current], {
           duration: dragDelay,
-          x: event.offsetX,
-          y: event.offsetY,
+          x: physicsDragPoint.x,
+          y: physicsDragPoint.y,
         });
       }
     },

@@ -86,16 +86,16 @@ export function getCollidingVertexIndex(
 }
 
 export function getVertexGravityPoint(
-  vertices: Vertex[],
-  edges: Edge[],
+  V: Vertex[],
+  E: Edge[],
   vertexIndex: number
 ) {
   let attachedVertices: Vertex[] = [];
-  let inputV = vertices[vertexIndex];
+  let inputV = V[vertexIndex];
 
-  for (let i = 0; i < edges.length; i++) {
-    let curV1 = edges[i].v1;
-    let curV2 = edges[i].v2;
+  for (let i = 0; i < E.length; i++) {
+    let curV1 = E[i].v1;
+    let curV2 = E[i].v2;
     if (curV1.x === inputV.x && curV1.y === inputV.y) {
       attachedVertices.push(curV2);
     }
@@ -105,4 +105,33 @@ export function getVertexGravityPoint(
   }
 
   return getAverageCoord(attachedVertices);
+}
+
+export function getDragPointWithPhysics(
+  V: Vertex[],
+  E: Edge[],
+  vertexIndex: number,
+  dragPoint: { x: number; y: number }
+) {
+  let inputV = V[vertexIndex];
+  let gravityPoint = getVertexGravityPoint(V, E, vertexIndex);
+
+  // if no edges, just return the drag point
+  if (isNaN(gravityPoint.x) || isNaN(gravityPoint.y)) {
+    return dragPoint;
+  }
+
+  let gravityPointDistance = getVertexDistance(
+    { x: gravityPoint.x, y: gravityPoint.y, r: 0 },
+    inputV
+  );
+
+  let physicsDragPoint = { x: 0, y: 0 };
+  physicsDragPoint.x =
+    (inputV.x + dragPoint.x + (gravityPoint.x * gravityPointDistance) / 100) /
+    3;
+  physicsDragPoint.y =
+    (inputV.y + dragPoint.y + (gravityPoint.y * gravityPointDistance) / 100) /
+    3;
+  return physicsDragPoint;
 }
