@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, RefObject } from "react";
 import * as THREE from "three";
 import smoke from "./fragment";
 
@@ -16,7 +16,11 @@ const isWebGLAvailable = () => {
   }
 };
 
-function ShaderCanvas() {
+type ShaderCanvasProps = {
+  mousePosRef: React.RefObject<{ x: number; y: number }>;
+};
+
+function ShaderCanvas({ mousePosRef }: ShaderCanvasProps) {
   const canvasRefs = useRef<HTMLCanvasElement | null>(null);
   const animationFrameId = useRef<number | null>(null);
 
@@ -47,6 +51,7 @@ function ShaderCanvas() {
     const material = new THREE.ShaderMaterial({
       uniforms: {
         iResolution: { value: resolution },
+        iMouse: { value: new THREE.Vector2(0, 0) },
         iTime: { value: 0 },
       },
       vertexShader: `
@@ -70,6 +75,8 @@ function ShaderCanvas() {
     const animate = (timestamp: DOMHighResTimeStamp) => {
       animationFrameId.current = requestAnimationFrame(animate);
       material.uniforms.iTime.value = timestamp / 1000;
+      material.uniforms.iMouse.value.x = mousePosRef.current.x;
+      material.uniforms.iMouse.value.y = mousePosRef.current.y;
       renderer.render(scene, camera);
     };
 

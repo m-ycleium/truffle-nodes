@@ -16,6 +16,7 @@ import gsap from "gsap";
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameId = useRef<number | null>(null);
+  const mousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const edgeProximity = 100;
   const vertexRadius = 4;
@@ -109,6 +110,7 @@ export default function Home() {
 
   const handleMouseMove = useCallback(
     (event: MouseEvent) => {
+      mousePosRef.current = { x: event.offsetX, y: event.offsetY };
       if (draggingVIndexRef.current !== -1) {
         gsap.to(V[draggingVIndexRef.current], {
           duration: dragDelay,
@@ -128,7 +130,7 @@ export default function Home() {
         height={500}
         style={{ border: "1px solid black" }}
       ></canvas>
-      <ShaderCanvas></ShaderCanvas>
+      <ShaderCanvas mousePosRef={mousePosRef}></ShaderCanvas>
     </>
   );
 }
