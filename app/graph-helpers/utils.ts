@@ -39,9 +39,7 @@ export function seedVertices(
   numVertices: number,
   r: number,
   maxX: number,
-  maxY: number,
-  minX?: number,
-  minY?: number
+  maxY: number
 ) {
   for (let i = 0; i < numVertices; i++) {
     vertices.push({
@@ -150,5 +148,24 @@ export function explodeVertex(
   for (let i = 0; i < numChildren; i++) {
     let curChild: Vertex = { x: inputV.x, y: inputV.y, r: childSize };
     addVertex(V, curChild);
+  }
+}
+
+export function isVertexOffScreen(vertex: Vertex, maxX: number, maxY: number) {
+  if (vertex.x < 0 || vertex.y < 0 || vertex.x > maxX || vertex.y > maxY) {
+    return true;
+  }
+}
+
+export function clearOffScreenVertices(
+  V: Vertex[],
+  maxX: number,
+  maxY: number
+) {
+  for (let i = 0; i < V.length; i++) {
+    let curV = V[i];
+    if (isVertexOffScreen(curV, maxX, maxY)) {
+      deleteVertex(V, i);
+    }
   }
 }

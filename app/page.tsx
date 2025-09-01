@@ -7,9 +7,10 @@ import {
   addVertex,
   getCollidingVertexIndex,
   noiseStep,
-  deleteVertex,
+  clearOffScreenVertices,
   getDragPointWithPhysics,
   explodeVertex,
+  isVertexOffScreen,
 } from "./graph-helpers/utils";
 import ShaderCanvas from "./shader-helpers/shaderCanvas";
 import { drawGraph } from "./graph-helpers/draw";
@@ -24,6 +25,8 @@ export const dragDelay = 0.48;
 export const maxV = 64;
 export const subGraphSize = 8;
 export const subGraphVertexRadius = 4;
+export const canvasWidth = 500;
+export const canvasHeight = 500;
 
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -44,7 +47,7 @@ export default function Home() {
 
   useEffect(() => {
     // init
-    seedVertices(V, numSeededVertices, vertexRadius, 500, 500);
+    seedVertices(V, numSeededVertices, vertexRadius, canvasWidth, canvasHeight);
     E = getEdges(V, edgeProximity);
 
     const canvas = canvasRef.current;
@@ -63,6 +66,7 @@ export default function Home() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       noiseStep(V, timestamp);
       VRef.current = V;
+      clearOffScreenVertices(V, canvasWidth, canvasHeight);
       drawGraph(V, E, ctx);
     };
 
@@ -118,7 +122,6 @@ export default function Home() {
       }
 
       if (!isDraggingRef.current && collidingVertexIndex != -1) {
-        //deleteVertex(V, collidingVertexIndex);
         explodeVertex(
           V,
           collidingVertexIndex,
@@ -148,6 +151,19 @@ export default function Home() {
           duration: dragDelay,
           x: physicsDragPoint.x,
           y: physicsDragPoint.y,
+          onUpdate: () => {
+            if (
+              isDraggingRef.current &&
+              isVertexOffScreen(
+                V[draggingVIndexRef.current],
+                canvasWidth,
+                canvasHeight
+              )
+            ) {
+              draggingVIndexRef.current = -1;
+              isDraggingRef.current = false;
+            }
+          },
         });
       }
     },
