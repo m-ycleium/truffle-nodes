@@ -62,9 +62,9 @@ void main() {
   float smoke = fbm(flow * 2. + iTime * 0.1);
   smoke = pow(smoke, 1.2);
 
-  smoke += 0.6 * disp.x;
+  smoke += 0.3 * disp.x;
 
-  fragColor = vec4(vec3(smoke), 1.0);
+  fragColor = vec4(vec3(smoke * 2., smoke, smoke), 1.0);
   gl_FragColor = fragColor;
 }
 `;
