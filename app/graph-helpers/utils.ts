@@ -51,6 +51,10 @@ export function addVertex(vertices: Vertex[], newV: Vertex) {
   vertices.push(newV);
 }
 
+export function deleteVertex(vertices: Vertex[], index: number) {
+  vertices.splice(index, 1);
+}
+
 // return index of first vertex colliding with point or -1
 export function getCollidingVertexIndex(
   vertices: Vertex[],

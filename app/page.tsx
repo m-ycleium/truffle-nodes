@@ -7,6 +7,7 @@ import {
   addVertex,
   getCollidingVertexIndex,
   noiseStep,
+  deleteVertex,
 } from "./graph-helpers/utils";
 import ShaderCanvas from "./shader-helpers/shaderCanvas";
 import { drawGraph } from "./graph-helpers/draw";
@@ -20,8 +21,8 @@ export default function Home() {
 
   const edgeProximity = 100;
   const vertexRadius = 4;
-  const numSeededVertices = 20;
-  const vertexClickRadius = 10;
+  const numSeededVertices = 40;
+  const vertexClickRadius = 40;
   const dragDelay = 0.48;
   const maxV = 64;
 
@@ -32,6 +33,8 @@ export default function Home() {
 
   // ref to avoid rerendering canvas
   const draggingVIndexRef = useRef<number>(-1);
+  const isDraggingRef = useRef<boolean>(false);
+  const dragTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     // init
@@ -63,6 +66,7 @@ export default function Home() {
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
       }
+      if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current);
     };
   }, []);
 
@@ -70,27 +74,7 @@ export default function Home() {
     canvas.addEventListener("mousedown", handleMouseDown);
     canvas.addEventListener("mouseup", handleMouseUp);
     canvas.addEventListener("mousemove", handleMouseMove);
-    //canvas.addEventListener("click", handleClick);
   }
-
-  const handleClick = useCallback(
-    (event: MouseEvent) => {
-      const collidingVertexIndex = getCollidingVertexIndex(
-        V,
-        { x: event.offsetX, y: event.offsetY },
-        vertexClickRadius
-      );
-
-      if (collidingVertexIndex === -1 && V.length < maxV) {
-        addVertex(V, {
-          x: event.offsetX,
-          y: event.offsetY,
-          r: vertexRadius,
-        });
-      }
-    },
-    [V]
-  );
 
   const handleMouseDown = useCallback(
     (event: MouseEvent) => {
@@ -107,7 +91,6 @@ export default function Home() {
     [V]
   );
 
-  // todo fix bug where adds a node if you are dragging and the vertex hasn't caught up
   const handleMouseUp = useCallback(
     (event: MouseEvent) => {
       const collidingVertexIndex = getCollidingVertexIndex(
@@ -115,6 +98,7 @@ export default function Home() {
         { x: event.offsetX, y: event.offsetY },
         vertexClickRadius
       );
+
       if (
         draggingVIndexRef.current == -1 &&
         collidingVertexIndex == -1 &&
@@ -127,6 +111,10 @@ export default function Home() {
         });
       }
 
+      if (!isDraggingRef.current && collidingVertexIndex != -1) {
+        deleteVertex(V, collidingVertexIndex);
+      }
+      isDraggingRef.current = false;
       draggingVIndexRef.current = -1;
     },
     [V]
@@ -136,6 +124,11 @@ export default function Home() {
     (event: MouseEvent) => {
       mousePosRef.current = { x: event.offsetX, y: event.offsetY };
       if (draggingVIndexRef.current !== -1) {
+        if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current);
+        dragTimeoutRef.current = setTimeout(() => {
+          isDraggingRef.current = true;
+          dragTimeoutRef.current = null;
+        }, 50);
         gsap.to(V[draggingVIndexRef.current], {
           duration: dragDelay,
           x: event.offsetX,
