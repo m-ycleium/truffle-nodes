@@ -9,6 +9,7 @@ import {
   noiseStep,
   deleteVertex,
   getDragPointWithPhysics,
+  explodeVertex,
 } from "./graph-helpers/utils";
 import ShaderCanvas from "./shader-helpers/shaderCanvas";
 import { drawGraph } from "./graph-helpers/draw";
@@ -26,6 +27,8 @@ export default function Home() {
   const vertexClickRadius = 40;
   const dragDelay = 0.48;
   const maxV = 64;
+  const subGraphSize = 8;
+  const subGraphVertexRadius = 1;
 
   let V: Vertex[] = [];
   let E: Edge[] = [];
@@ -115,7 +118,13 @@ export default function Home() {
       }
 
       if (!isDraggingRef.current && collidingVertexIndex != -1) {
-        deleteVertex(V, collidingVertexIndex);
+        //deleteVertex(V, collidingVertexIndex);
+        explodeVertex(
+          V,
+          collidingVertexIndex,
+          subGraphSize,
+          subGraphVertexRadius
+        );
       }
       isDraggingRef.current = false;
       draggingVIndexRef.current = -1;

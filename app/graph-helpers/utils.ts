@@ -127,7 +127,7 @@ export function getDragPointWithPhysics(
   );
 
   let physicsDragPoint = { x: 0, y: 0 };
-  // todo fix gravity logic
+  // todo improve gravity logic
   physicsDragPoint.x =
     (inputV.x + dragPoint.x + (gravityPoint.x * gravityPointDistance) / 100) /
     3;
@@ -135,4 +135,18 @@ export function getDragPointWithPhysics(
     (inputV.y + dragPoint.y + (gravityPoint.y * gravityPointDistance) / 100) /
     3;
   return physicsDragPoint;
+}
+
+export function explodeVertex(
+  V: Vertex[],
+  vertexIndex: number,
+  numChildren: number,
+  childSize: number
+) {
+  let inputV = V[vertexIndex];
+  deleteVertex(V, vertexIndex);
+  for (let i = 0; i < numChildren; i++) {
+    let curChild: Vertex = { x: inputV.x, y: inputV.y, r: childSize };
+    addVertex(V, curChild);
+  }
 }
