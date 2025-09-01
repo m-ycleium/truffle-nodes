@@ -124,11 +124,7 @@ export default function Home() {
     (event: MouseEvent) => {
       mousePosRef.current = { x: event.offsetX, y: event.offsetY };
       if (draggingVIndexRef.current !== -1) {
-        if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current);
-        dragTimeoutRef.current = setTimeout(() => {
-          isDraggingRef.current = true;
-          dragTimeoutRef.current = null;
-        }, 50);
+        isDraggingRef.current = true;
         gsap.to(V[draggingVIndexRef.current], {
           duration: dragDelay,
           x: event.offsetX,
