@@ -69,7 +69,7 @@ function ShaderCanvas() {
 
     const animate = (timestamp: DOMHighResTimeStamp) => {
       animationFrameId.current = requestAnimationFrame(animate);
-      material.uniforms.iTime.value = timestamp;
+      material.uniforms.iTime.value = timestamp / 1000;
       renderer.render(scene, camera);
     };
 
