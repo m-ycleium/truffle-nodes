@@ -23,6 +23,7 @@ export default function Home() {
   const numSeededVertices = 20;
   const vertexClickRadius = 10;
   const dragDelay = 0.48;
+  const maxV = 64;
 
   let V: Vertex[] = [];
   let E: Edge[] = [];
@@ -80,7 +81,7 @@ export default function Home() {
         vertexClickRadius
       );
 
-      if (collidingVertexIndex === -1) {
+      if (collidingVertexIndex === -1 && V.length < maxV) {
         addVertex(V, {
           x: event.offsetX,
           y: event.offsetY,
@@ -146,7 +147,11 @@ export default function Home() {
           position: "absolute",
         }}
       ></canvas>
-      <ShaderCanvas mousePosRef={mousePosRef} VRef={VRef}></ShaderCanvas>
+      <ShaderCanvas
+        mousePosRef={mousePosRef}
+        VRef={VRef}
+        maxPoints={maxV}
+      ></ShaderCanvas>
     </div>
   );
 }

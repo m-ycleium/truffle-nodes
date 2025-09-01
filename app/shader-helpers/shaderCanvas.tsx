@@ -4,7 +4,6 @@ import { useRef, useEffect, RefObject } from "react";
 import * as THREE from "three";
 import smoke from "./fragment";
 import { type Vertex } from "../graph-helpers/types";
-import { Verify } from "crypto";
 
 const isWebGLAvailable = () => {
   try {
@@ -21,11 +20,29 @@ const isWebGLAvailable = () => {
 type ShaderCanvasProps = {
   mousePosRef: RefObject<{ x: number; y: number }>;
   VRef: RefObject<Vertex[]>;
+  maxPoints: number;
 };
 
-function ShaderCanvas({ mousePosRef, VRef }: ShaderCanvasProps) {
+function ShaderCanvas({ mousePosRef, VRef, maxPoints }: ShaderCanvasProps) {
   const canvasRefs = useRef<HTMLCanvasElement | null>(null);
   const animationFrameId = useRef<number | null>(null);
+
+  const uVerticesArrayRef = useRef<THREE.Vector2[]>(
+    Array.from({ length: maxPoints }, () => new THREE.Vector2(0, 0))
+  );
+
+  // necessary to avoid remaking the array which trips up GLSL
+  const setVertices = (pts?: Array<{ x: number; y: number }>) => {
+    const arr = uVerticesArrayRef.current;
+    const n = Math.min(pts?.length ?? 0, arr.length);
+    for (let i = 0; i < n; i++) {
+      arr[i].set(pts![i].x, pts![i].y);
+    }
+    for (let i = n; i < arr.length; i++) {
+      arr[i].set(0, 0);
+    }
+    return n;
+  };
 
   useEffect(() => {
     // init
@@ -56,6 +73,8 @@ function ShaderCanvas({ mousePosRef, VRef }: ShaderCanvasProps) {
         iResolution: { value: resolution },
         iMouse: { value: new THREE.Vector2(0, 0) },
         iTime: { value: 0 },
+        uVertices: { value: uVerticesArrayRef.current },
+        uNumVertices: { value: 20 },
       },
       vertexShader: `
         void main() {
@@ -80,6 +99,8 @@ function ShaderCanvas({ mousePosRef, VRef }: ShaderCanvasProps) {
       material.uniforms.iTime.value = timestamp / 1000;
       material.uniforms.iMouse.value.x = mousePosRef.current.x;
       material.uniforms.iMouse.value.y = mousePosRef.current.y;
+      const count = setVertices(VRef.current ?? []);
+      material.uniforms.uNumVertices.value = count;
       renderer.render(scene, camera);
     };
 

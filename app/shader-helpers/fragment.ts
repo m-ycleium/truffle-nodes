@@ -1,10 +1,15 @@
 "use client";
 
 export default `
+precision mediump float;
 uniform vec2 iResolution;
 uniform float iTime;
 uniform vec2 iMouse;
+
 #define OCTAVES 5
+#define MAX_POINTS 64
+uniform vec2 uVertices[MAX_POINTS];
+uniform int uNumVertices;
 
 float rand(vec2 p) {
   return fract(sin(dot(p, vec2(11., 32.))) * 11111.);
@@ -34,9 +39,8 @@ float fbm(vec2 p) {
   return f;
 }
 
-vec3 displace(vec2 p, vec2 m) {
-  float dispScale = 0.15;
-  vec2 r = p - m;
+vec3 displace(vec2 p, vec2 s, float dispScale) {
+  vec2 r = p - s;
   float r2 = dot(r,r);
   float inf = exp(-r2/(2.0 * dispScale * dispScale));
   vec2 swirl= vec2(-r.y, r.x);
@@ -51,12 +55,22 @@ void main() {
   vec2 m = (iMouse.xy - 0.5*res) / res.y;
   
   // account for flipped coordinate space
-  m.y = 0. - m.y;
+  m.y = 0. -m.y;
 
   vec2 flow = vec2(fbm(p*1.5 + 0.10*iTime), fbm(p*1.5 - 0.11*iTime));
   flow = p + 0.7*flow;
   
-  vec3 disp = displace(p, m);
+  vec3 disp = displace(p, m, 0.15);
+
+  
+  for (int i = 0; i <MAX_POINTS; i++) {
+    if (i >= uNumVertices) break; 
+    vec2 vP = (uVertices[i] - 0.5*res) / res.y;
+    // account for flipped coordinate space
+    vP.y = -vP.y;
+    flow += 0.8 * displace(p, vP, 0.2).yz;
+  }
+    
   flow += 0.6 * disp.yz;
 
   float smoke = fbm(flow * 2. + iTime * 0.1);
@@ -64,6 +78,15 @@ void main() {
 
   smoke += 0.3 * disp.x;
 
+  
+  for (int i = 0; i <MAX_POINTS; i++) {
+    if (i >= uNumVertices) break; 
+    vec2 vP = (uVertices[i] - 0.5*res) / res.y;
+    // account for flipped coordinate space
+    vP.y = -vP.y;
+    smoke += 0.3 * displace(p, vP, 0.05).x;
+  }
+    
   fragColor = vec4(vec3(smoke * 2., smoke, smoke), 1.0);
   gl_FragColor = fragColor;
 }
