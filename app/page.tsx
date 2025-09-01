@@ -161,20 +161,31 @@ export default function Home() {
     [V]
   );
 
+  function getLocalPos(e: MouseEvent | PointerEvent) {
+    const canvas = canvasRef.current!;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
+    };
+  }
+
   const handleMouseMove = useCallback(
     (event: MouseEvent) => {
       mousePosRef.current = { x: event.offsetX, y: event.offsetY };
       if (draggingVIndexRef.current !== -1) {
         isDraggingRef.current = true;
-        let dragPoint = { x: event.offsetX, y: event.offsetY };
-        // let physicsDragPoint = getDragPointWithPhysics(
-        //   V,
-        //   E,
-        //   draggingVIndexRef.current,
-        //   dragPoint
-        // );
-        // physics disabled for demo
-        let physicsDragPoint = dragPoint;
+        let dragPoint = getLocalPos(event);
+
+        let physicsDragPoint = getDragPointWithPhysics(
+          V,
+          E,
+          draggingVIndexRef.current,
+          dragPoint
+        );
+
         gsap.to(V[draggingVIndexRef.current], {
           duration: dragDelay,
           x: physicsDragPoint.x,
