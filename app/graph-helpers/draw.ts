@@ -1,4 +1,4 @@
-import { type Vertex, type Edge } from "./types";
+import { type Vertex, type Edge, GravityBasin } from "./types";
 import { vertexRadius, subGraphVertexRadius } from "../page";
 
 export const graphColor = "#FFFFFF";
@@ -33,6 +33,25 @@ export function drawEdge(e: Edge, ctx: CanvasRenderingContext2D) {
   ctx.moveTo(e.v1.x, e.v1.y);
   ctx.lineTo(e.v2.x, e.v2.y);
   ctx.stroke();
+}
+
+export function drawGravityBasin(
+  g: GravityBasin,
+  ctx: CanvasRenderingContext2D
+) {
+  ctx.strokeStyle = graphColor;
+  ctx.beginPath();
+  ctx.arc(g.x, g.y, g.r, 0, 2 * Math.PI);
+  ctx.stroke();
+}
+
+export function drawGravityBasins(
+  G: GravityBasin[],
+  ctx: CanvasRenderingContext2D
+) {
+  for (let i = 0; i < G.length; i++) {
+    drawGravityBasin(G[i], ctx);
+  }
 }
 
 export function drawGraph(

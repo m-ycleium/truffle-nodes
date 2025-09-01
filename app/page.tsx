@@ -11,18 +11,19 @@ import {
   getDragPointWithPhysics,
   explodeVertex,
   isVertexOffScreen,
+  gravityStep,
 } from "./graph-helpers/utils";
 import ShaderCanvas from "./shader-helpers/shaderCanvas";
-import { drawGraph } from "./graph-helpers/draw";
-import { type Vertex, type Edge } from "./graph-helpers/types";
+import { drawGraph, drawGravityBasins } from "./graph-helpers/draw";
+import { type Vertex, type Edge, GravityBasin } from "./graph-helpers/types";
 import gsap from "gsap";
 
 export const edgeProximity = 100;
 export const vertexRadius = 6;
-export const numSeededVertices = 30;
+export const numSeededVertices = 64;
 export const vertexClickRadius = 40;
 export const dragDelay = 0.48;
-export const maxV = 64;
+export const maxV = 128;
 export const subGraphSize = 8;
 export const subGraphVertexRadius = 4;
 export const canvasWidth = 500;
@@ -35,6 +36,14 @@ export default function Home() {
 
   let V: Vertex[] = [];
   let E: Edge[] = [];
+  let G: GravityBasin[] = [
+    {
+      x: canvasWidth / 2,
+      y: canvasHeight / 2,
+      r: 200,
+      s: 10,
+    },
+  ];
 
   const VRef = useRef<Vertex[]>(V);
 
@@ -65,9 +74,11 @@ export default function Home() {
       E = getEdges(V, edgeProximity);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       noiseStep(V, timestamp);
+      gravityStep(V, G[0]);
       VRef.current = V;
       clearOffScreenVertices(V, canvasWidth, canvasHeight);
       drawGraph(V, E, ctx);
+      //drawGravityBasins(G, ctx);
     };
 
     animationFrameId.current = requestAnimationFrame(animate);
@@ -122,12 +133,17 @@ export default function Home() {
       }
 
       if (!isDraggingRef.current && collidingVertexIndex != -1) {
-        explodeVertex(
-          V,
-          collidingVertexIndex,
-          subGraphSize,
-          subGraphVertexRadius
-        );
+        if (
+          V[collidingVertexIndex].r === vertexRadius &&
+          V.length + subGraphSize < maxV
+        ) {
+          explodeVertex(
+            V,
+            collidingVertexIndex,
+            subGraphSize,
+            subGraphVertexRadius
+          );
+        }
       }
       isDraggingRef.current = false;
       draggingVIndexRef.current = -1;
