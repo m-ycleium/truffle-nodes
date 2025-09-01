@@ -34,33 +34,35 @@ float fbm(vec2 p) {
   return f;
 }
 
-vec2 displace(vec2 p, vec2 m) {
+vec3 displace(vec2 p, vec2 m) {
   float dispScale = 0.15;
   vec2 r = p - m;
   float r2 = dot(r,r);
   float inf = exp(-r2/(2.0 * dispScale * dispScale));
   vec2 swirl= vec2(-r.y, r.x);
-  return inf * swirl;
+  return vec3(inf, inf * swirl);
 }
 
 void main() {
   vec2 fragCoord = gl_FragCoord.xy;
   vec4 fragColor;
   vec2 res = iResolution.xy;
-  vec2 p   = (fragCoord - 0.5*res) / res.y;
-
-  vec2 m   = (iMouse.xy - 0.5*res) / res.y;
+  vec2 p = (fragCoord - 0.5*res) / res.y;
+  vec2 m = (iMouse.xy - 0.5*res) / res.y;
+  
+  // account for flipped coordinate space
+  m.y = 0. - m.y;
 
   vec2 flow = vec2(fbm(p*1.5 + 0.10*iTime), fbm(p*1.5 - 0.11*iTime));
   flow = p + 0.7*flow;
   
-  vec2 disp = displace(p, m);
-  flow += 0.6 * disp;
-
+  vec3 disp = displace(p, m);
+  flow += 0.6 * disp.yz;
 
   float smoke = fbm(flow * 2. + iTime * 0.1);
-
   smoke = pow(smoke, 1.2);
+
+  smoke += 0.6 * disp.x;
 
   fragColor = vec4(vec3(smoke), 1.0);
   gl_FragColor = fragColor;
