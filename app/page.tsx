@@ -123,14 +123,27 @@ export default function Home() {
   );
 
   return (
-    <>
+    <div
+      style={{
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        borderRadius: 33,
+        overflow: "hidden",
+        width: 500,
+        height: 500,
+      }}
+    >
       <canvas
         ref={canvasRef}
         width={500}
         height={500}
-        style={{ border: "1px solid black" }}
+        style={{
+          position: "absolute",
+        }}
       ></canvas>
       <ShaderCanvas mousePosRef={mousePosRef}></ShaderCanvas>
-    </>
+    </div>
   );
 }

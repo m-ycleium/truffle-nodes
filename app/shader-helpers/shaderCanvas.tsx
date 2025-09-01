@@ -89,14 +89,7 @@ function ShaderCanvas({ mousePosRef }: ShaderCanvasProps) {
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRefs}
-      width={500}
-      height={500}
-      style={{ border: "1px solid black" }}
-    ></canvas>
-  );
+  return <canvas ref={canvasRefs} width={500} height={500}></canvas>;
 }
 
 export default ShaderCanvas;
