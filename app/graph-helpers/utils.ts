@@ -7,6 +7,17 @@ export function getVertexDistance(v1: Vertex, v2: Vertex) {
   return Math.sqrt((v2.x - v1.x) ** 2 + (v2.y - v1.y) ** 2);
 }
 
+export function getAverageCoord(vertices: Vertex[]) {
+  let totalX = 0;
+  let totalY = 0;
+  for (let i = 0; i < vertices.length; i++) {
+    let curV = vertices[i];
+    totalX += curV.x;
+    totalY += curV.y;
+  }
+  return { x: totalX / vertices.length, y: totalY / vertices.length };
+}
+
 export function getEdges(vertices: Vertex[], minProximity: number) {
   let edges: Edge[] = [];
   for (let i = 0; i < vertices.length; i++) {
@@ -72,4 +83,26 @@ export function getCollidingVertexIndex(
     }
   }
   return index;
+}
+
+export function getVertexGravityPoint(
+  vertices: Vertex[],
+  edges: Edge[],
+  vertexIndex: number
+) {
+  let attachedVertices: Vertex[] = [];
+  let inputV = vertices[vertexIndex];
+
+  for (let i = 0; i < edges.length; i++) {
+    let curV1 = edges[i].v1;
+    let curV2 = edges[i].v2;
+    if (curV1.x === inputV.x && curV1.y === inputV.y) {
+      attachedVertices.push(curV2);
+    }
+    if (curV2.x === inputV.x && curV2.y === inputV.y) {
+      attachedVertices.push(curV1);
+    }
+  }
+
+  return getAverageCoord(attachedVertices);
 }

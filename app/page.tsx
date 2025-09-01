@@ -8,6 +8,7 @@ import {
   getCollidingVertexIndex,
   noiseStep,
   deleteVertex,
+  getVertexGravityPoint,
 } from "./graph-helpers/utils";
 import ShaderCanvas from "./shader-helpers/shaderCanvas";
 import { drawGraph } from "./graph-helpers/draw";
@@ -21,7 +22,7 @@ export default function Home() {
 
   const edgeProximity = 100;
   const vertexRadius = 4;
-  const numSeededVertices = 40;
+  const numSeededVertices = 10;
   const vertexClickRadius = 40;
   const dragDelay = 0.48;
   const maxV = 64;
@@ -127,6 +128,7 @@ export default function Home() {
       mousePosRef.current = { x: event.offsetX, y: event.offsetY };
       if (draggingVIndexRef.current !== -1) {
         isDraggingRef.current = true;
+        console.log(getVertexGravityPoint(V, E, draggingVIndexRef.current));
         gsap.to(V[draggingVIndexRef.current], {
           duration: dragDelay,
           x: event.offsetX,
