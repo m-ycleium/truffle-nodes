@@ -167,12 +167,14 @@ export default function Home() {
       if (draggingVIndexRef.current !== -1) {
         isDraggingRef.current = true;
         let dragPoint = { x: event.offsetX, y: event.offsetY };
-        let physicsDragPoint = getDragPointWithPhysics(
-          V,
-          E,
-          draggingVIndexRef.current,
-          dragPoint
-        );
+        // let physicsDragPoint = getDragPointWithPhysics(
+        //   V,
+        //   E,
+        //   draggingVIndexRef.current,
+        //   dragPoint
+        // );
+        // physics disabled for demo
+        let physicsDragPoint = dragPoint;
         gsap.to(V[draggingVIndexRef.current], {
           duration: dragDelay,
           x: physicsDragPoint.x,
