@@ -20,6 +20,7 @@ import gsap from "gsap";
 
 export const edgeProximity = 100;
 export const vertexRadius = 6;
+export const anchorRadius = 16;
 export const numSeededVertices = 64;
 export const vertexClickRadius = 40;
 export const dragDelay = 0.48;
@@ -34,7 +35,14 @@ export default function Home() {
   const animationFrameId = useRef<number | null>(null);
   const mousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  let V: Vertex[] = [];
+  // seed with central node
+  let V: Vertex[] = [
+    {
+      x: canvasWidth / 2,
+      y: canvasHeight / 2,
+      r: anchorRadius,
+    },
+  ];
   let E: Edge[] = [];
   let G: GravityBasin[] = [
     {

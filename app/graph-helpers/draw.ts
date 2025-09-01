@@ -1,5 +1,5 @@
 import { type Vertex, type Edge, GravityBasin } from "./types";
-import { vertexRadius, subGraphVertexRadius } from "../page";
+import { vertexRadius, subGraphVertexRadius, anchorRadius } from "../page";
 
 export const graphColor = "#FFFFFF";
 export const subGraphColor = "#00FFFF";
@@ -59,11 +59,10 @@ export function drawGraph(
   edges: Edge[],
   ctx: CanvasRenderingContext2D
 ) {
-  for (let i = 0; i < vertices.length; i++) {
-    drawVertex(vertices[i], ctx);
-  }
-
   for (let i = 0; i < edges.length; i++) {
     drawEdge(edges[i], ctx);
+  }
+  for (let i = 0; i < vertices.length; i++) {
+    drawVertex(vertices[i], ctx);
   }
 }

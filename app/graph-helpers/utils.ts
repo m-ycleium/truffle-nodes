@@ -1,5 +1,6 @@
 import { type Vertex, type Edge, GravityBasin } from "./types";
 import { createNoise2D } from "simplex-noise";
+import { anchorRadius } from "../page";
 
 export const noise2D = createNoise2D();
 
@@ -53,6 +54,7 @@ export function seedVertices(
 export function noiseStep(vertices: Vertex[], time: number) {
   for (let i = 0; i < vertices.length; i++) {
     let curV = vertices[i];
+    if (curV.r === anchorRadius) continue;
     curV.x += noise2D(i, time / 3200) / 4;
     curV.y += noise2D(vertices.length - i, time / 3200) / 4;
   }
@@ -72,12 +74,6 @@ export function gravityStep(vertices: Vertex[], gravityBasin: GravityBasin) {
       gravityBasinOriginAsVertex
     );
     if (distFromBasinCenter > gravityBasin.r) {
-      //   curV.x +=
-      //     ((curV.x - getAverageCoord([curV, gravityBasinOriginAsVertex]).x) * 1) /
-      //     gravityBasin.s;
-      //   curV.y +=
-      //     ((curV.y - getAverageCoord([curV, gravityBasinOriginAsVertex]).y) * 1) /
-      //     gravityBasin.s;
       curV.x -= (curV.x - gravityBasinOriginAsVertex.x) / 1000;
       curV.y -= (curV.y - gravityBasinOriginAsVertex.y) / 1000;
     }
