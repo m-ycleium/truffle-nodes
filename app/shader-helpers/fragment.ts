@@ -76,15 +76,14 @@ void main() {
   float smoke = fbm(flow * 2. + iTime * 0.1);
   smoke = pow(smoke, 1.2);
 
-  smoke += 0.3 * disp.x;
+  smoke += 0.2 * disp.x;
 
-  
   for (int i = 0; i <MAX_POINTS; i++) {
     if (i >= uNumVertices) break; 
     vec2 vP = (uVertices[i] - 0.5*res) / res.y;
     // account for flipped coordinate space
     vP.y = -vP.y;
-    smoke += 0.3 * displace(p, vP, 0.05).x;
+    smoke += 0.2 * displace(p, vP, 0.02).x;
   }
     
   fragColor = vec4(vec3(smoke * 2., smoke, smoke), 1.0);
