@@ -39,7 +39,9 @@ export function seedVertices(
   numVertices: number,
   r: number,
   maxX: number,
-  maxY: number
+  maxY: number,
+  minX?: number,
+  minY?: number
 ) {
   for (let i = 0; i < numVertices; i++) {
     vertices.push({

@@ -16,19 +16,19 @@ import { drawGraph } from "./graph-helpers/draw";
 import { type Vertex, type Edge } from "./graph-helpers/types";
 import gsap from "gsap";
 
+export const edgeProximity = 100;
+export const vertexRadius = 6;
+export const numSeededVertices = 30;
+export const vertexClickRadius = 40;
+export const dragDelay = 0.48;
+export const maxV = 64;
+export const subGraphSize = 8;
+export const subGraphVertexRadius = 4;
+
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameId = useRef<number | null>(null);
   const mousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-
-  const edgeProximity = 100;
-  const vertexRadius = 4;
-  const numSeededVertices = 30;
-  const vertexClickRadius = 40;
-  const dragDelay = 0.48;
-  const maxV = 64;
-  const subGraphSize = 8;
-  const subGraphVertexRadius = 1;
 
   let V: Vertex[] = [];
   let E: Edge[] = [];
