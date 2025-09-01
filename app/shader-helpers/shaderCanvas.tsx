@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useCallback } from "react";
 import * as THREE from "three";
+import smoke from "./fragment";
 
 const isWebGLAvailable = () => {
   try {
@@ -53,6 +54,7 @@ function ShaderCanvas() {
           gl_Position = vec4(position, 1.0);
         }
       `,
+      fragmentShader: smoke,
     });
 
     const mesh = new THREE.Mesh(geometry, material);
