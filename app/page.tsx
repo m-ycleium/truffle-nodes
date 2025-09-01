@@ -70,7 +70,7 @@ export default function Home() {
     canvas.addEventListener("mousedown", handleMouseDown);
     canvas.addEventListener("mouseup", handleMouseUp);
     canvas.addEventListener("mousemove", handleMouseMove);
-    canvas.addEventListener("click", handleClick);
+    //canvas.addEventListener("click", handleClick);
   }
 
   const handleClick = useCallback(
@@ -108,9 +108,29 @@ export default function Home() {
   );
 
   // todo fix bug where adds a node if you are dragging and the vertex hasn't caught up
-  const handleMouseUp = useCallback(() => {
-    draggingVIndexRef.current = -1;
-  }, []);
+  const handleMouseUp = useCallback(
+    (event: MouseEvent) => {
+      const collidingVertexIndex = getCollidingVertexIndex(
+        V,
+        { x: event.offsetX, y: event.offsetY },
+        vertexClickRadius
+      );
+      if (
+        draggingVIndexRef.current == -1 &&
+        collidingVertexIndex == -1 &&
+        V.length < maxV
+      ) {
+        addVertex(V, {
+          x: event.offsetX,
+          y: event.offsetY,
+          r: vertexRadius,
+        });
+      }
+
+      draggingVIndexRef.current = -1;
+    },
+    [V]
+  );
 
   const handleMouseMove = useCallback(
     (event: MouseEvent) => {
