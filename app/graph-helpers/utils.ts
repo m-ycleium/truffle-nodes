@@ -127,6 +127,7 @@ export function getDragPointWithPhysics(
   );
 
   let physicsDragPoint = { x: 0, y: 0 };
+  // todo fix gravity logic
   physicsDragPoint.x =
     (inputV.x + dragPoint.x + (gravityPoint.x * gravityPointDistance) / 100) /
     3;

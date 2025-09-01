@@ -22,7 +22,7 @@ export default function Home() {
 
   const edgeProximity = 100;
   const vertexRadius = 4;
-  const numSeededVertices = 10;
+  const numSeededVertices = 30;
   const vertexClickRadius = 40;
   const dragDelay = 0.48;
   const maxV = 64;
@@ -50,7 +50,7 @@ export default function Home() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    addCanvasEventListeners(canvas);
+    addMouseEventListeners();
 
     const animate = (timestamp: DOMHighResTimeStamp) => {
       animationFrameId.current = requestAnimationFrame(animate);
@@ -73,10 +73,10 @@ export default function Home() {
     };
   }, []);
 
-  function addCanvasEventListeners(canvas: HTMLCanvasElement) {
-    canvas.addEventListener("mousedown", handleMouseDown);
-    canvas.addEventListener("mouseup", handleMouseUp);
-    canvas.addEventListener("mousemove", handleMouseMove);
+  function addMouseEventListeners() {
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("mousemove", handleMouseMove);
   }
 
   const handleMouseDown = useCallback(
