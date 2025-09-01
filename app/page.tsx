@@ -59,7 +59,7 @@ export default function Home() {
   const draggingVIndexRef = useRef<number>(-1);
   const isDraggingRef = useRef<boolean>(false);
 
-  // todo: properly use this to improve delete vertex ux
+  // todo: properly use this to improve explode ux
   const dragTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
