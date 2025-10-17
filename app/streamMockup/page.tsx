@@ -28,7 +28,28 @@ const conversation: ConversationStep[] = [
 // Timing configuration (in milliseconds)
 const USER_DELAY = 800;
 const MODEL_DELAY = 600;
-const TOKENS_PER_SECOND = 40;
+const TOKENS_PER_SECOND = 100;
+
+// Thinking token library (braille alphabet)
+const THINKING_TOKEN_LIBRARY = [
+  '⠁', '⠃', '⠉', '⠙', '⠑', '⠋', '⠛', '⠓', '⠊', '⠚',
+  '⠅', '⠇', '⠍', '⠝', '⠕', '⠏', '⠟', '⠗', '⠎', '⠞',
+  '⠥', '⠧', '⠺', '⠭', '⠽', '⠵', '⠀'
+];
+
+// Maximum number of thinking tokens to display at once (sliding window)
+const THINKING_WINDOW_SIZE = 4;
+
+// Generate thinking display - cycles all characters at once for uniform effect
+function generateThinkingDisplay(tokenCount: number, windowSize: number): string {
+  // Sample from different parts of the library based on token count for dynamic feel
+  const offset = tokenCount % THINKING_TOKEN_LIBRARY.length;
+  let display = '';
+  for (let i = 0; i < windowSize; i++) {
+    display += THINKING_TOKEN_LIBRARY[(offset + i) % THINKING_TOKEN_LIBRARY.length];
+  }
+  return display;
+}
 
 export default function StreamMockup() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -39,6 +60,7 @@ export default function StreamMockup() {
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const streamPositionRef = useRef<number>(0);
   const isStreamingRef = useRef<boolean>(false);
+  const thinkingTokenCountRef = useRef<number>(0);
 
   const reset = () => {
     setCurrentStepIndex(0);
@@ -47,6 +69,7 @@ export default function StreamMockup() {
     setIsPlaying(true);
     streamPositionRef.current = 0;
     isStreamingRef.current = false;
+    thinkingTokenCountRef.current = 0;
   };
 
   const togglePlayPause = () => {
@@ -87,11 +110,13 @@ export default function StreamMockup() {
       // Model message streams in
       const fullText = currentStep.text;
       const msPerToken = 1000 / TOKENS_PER_SECOND;
+      const isThinking = currentStep.modelResponseType === 'thinking';
       
       // Check if we need to initialize the message
       if (messages.length <= currentStepIndex) {
         setMessages(prev => [...prev, { ...currentStep, fullText: '' }]);
         streamPositionRef.current = 0;
+        thinkingTokenCountRef.current = 0;
       }
       
       const messageIndex = currentStepIndex;
@@ -99,25 +124,53 @@ export default function StreamMockup() {
 
       const streamNextToken = () => {
         if (currentIndex < fullText.length) {
-          // Stream by words for more natural feel
+          // Stream by words for natural feel
           const remainingText = fullText.slice(currentIndex);
           const nextSpace = remainingText.search(/[\s,\.]/);
           const charsToAdd = nextSpace > 0 ? nextSpace + 1 : 1;
           
           currentIndex += charsToAdd;
           streamPositionRef.current = currentIndex;
-          const newText = fullText.slice(0, currentIndex);
+          thinkingTokenCountRef.current += 1;
           
-          setMessages(prev => {
-            const updated = [...prev];
-            updated[messageIndex] = { ...currentStep, fullText: newText };
-            return updated;
-          });
+          // Handle display based on message type
+          let displayText: string;
+          let shouldUpdate = true;
+          
+          if (isThinking) {
+            // Fill window initially, then only update in batches of THINKING_WINDOW_SIZE
+            if (thinkingTokenCountRef.current <= THINKING_WINDOW_SIZE) {
+              // Still filling the window - show one character at a time
+              displayText = generateThinkingDisplay(thinkingTokenCountRef.current, thinkingTokenCountRef.current);
+            } else {
+              // Window is full - only update when we have a full batch ready
+              const tokensAfterFilling = thinkingTokenCountRef.current - THINKING_WINDOW_SIZE;
+              if (tokensAfterFilling % THINKING_WINDOW_SIZE === 0) {
+                // Full batch ready - swap all characters at once
+                displayText = generateThinkingDisplay(thinkingTokenCountRef.current, THINKING_WINDOW_SIZE);
+              } else {
+                // Not enough tokens yet - don't update display
+                shouldUpdate = false;
+                displayText = ''; // placeholder, won't be used
+              }
+            }
+          } else {
+            displayText = fullText.slice(0, currentIndex);
+          }
+          
+          if (shouldUpdate) {
+            setMessages(prev => {
+              const updated = [...prev];
+              updated[messageIndex] = { ...currentStep, fullText: displayText };
+              return updated;
+            });
+          }
 
           timeoutRef.current = setTimeout(streamNextToken, msPerToken * charsToAdd);
         } else {
           // Streaming complete, move to next step
           streamPositionRef.current = 0;
+          thinkingTokenCountRef.current = 0;
           timeoutRef.current = setTimeout(() => {
             setCurrentStepIndex(prev => prev + 1);
           }, MODEL_DELAY);
