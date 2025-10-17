@@ -16,6 +16,7 @@ interface ConversationStep {
   toolDisplayText?: string;
   toolTokenStream?: string;
   toolResponse?: ToolCallResponse;
+  isAppTool?: boolean;
 }
 
 const conversation: ConversationStep[] = [
@@ -39,6 +40,15 @@ const conversation: ConversationStep[] = [
     toolDisplayText: 'searching "LAX Address"',
     toolTokenStream: 'Los Angeles International Airport (LAX) is located at 1 World Way, Los Angeles, CA 90045. The main terminal complex is accessible via multiple entrances. Airport information: open 24 hours, multiple terminals (1-8), transportation options available.',
     toolResponse: null,
+    isAppTool: false,
+  },
+  {
+    type: 'tool',
+    text: '',
+    toolDisplayText: 'calling book ride',
+    toolTokenStream: 'Contacting ride service API... Processing request... Confirming availability... Calculating route... Estimating fare... Finalizing booking...',
+    toolResponse: { html: '<placeholder>' },
+    isAppTool: true,
   },
 ];
 
@@ -309,23 +319,23 @@ export default function StreamMockup() {
   }, [currentStepIndex, isPlaying]);
 
   return (
-    <div className={inter.className} style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      minHeight: '100vh',
-      backgroundColor: '#f5f5f5',
-      padding: '20px'
-    }}>
+    <>
+      <div className={inter.className} style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh',
+        backgroundColor: '#E5E4E0',
+        padding: '20px'
+      }}>
       <div style={{
         width: '640px',
         height: '480px',
-        backgroundColor: 'white',
+        backgroundColor: '#F8F8F8',
         border: '1px solid #ddd',
         borderRadius: '8px',
         display: 'flex',
         flexDirection: 'column',
-        position: 'relative',
         overflow: 'hidden'
       }}>
         {/* Messages area */}
@@ -358,32 +368,47 @@ export default function StreamMockup() {
                   <div style={{
                     padding: '10px 14px',
                     borderRadius: '12px',
-                    backgroundColor: '#007AFF',
-                    color: 'white',
+                    backgroundColor: '#FFFFFF',
+                    color: '#212529',
                     fontSize: '14px',
                     lineHeight: '1.4'
                   }}>
                     {msg.fullText}
                   </div>
                 ) : msg.type === 'tool' ? (
-                  <div style={{
-                    padding: '6px 10px',
-                    borderRadius: '8px',
-                    backgroundColor: '#E9ECEF',
-                    color: '#212529',
-                    fontSize: '13px',
-                    lineHeight: '1.4',
-                    opacity: isToolComplete ? 0.5 : 1,
-                    transition: 'opacity 200ms ease-in-out'
-                  }}>
+                  <div style={{ display: 'inline-block', minWidth: '320px' }}>
                     <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
+                      padding: '6px 10px',
+                      borderRadius: '8px',
+                      backgroundColor: msg.isAppTool ? '#2C2C2E' : '#E9ECEF',
+                      color: msg.isAppTool ? 'white' : '#212529',
+                      fontSize: '13px',
+                      lineHeight: '1.4',
+                      opacity: isToolComplete ? 0.5 : 1,
+                      transition: 'opacity 200ms ease-in-out',
+                      width: 'fit-content'
                     }}>
-                      <span style={{ fontSize: '14px', flexShrink: 0 }}>{loaderChar}</span>
-                      <span style={{ fontWeight: 500 }}>{msg.toolDisplayText}</span>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}>
+                        <span style={{ fontSize: '14px', flexShrink: 0 }}>{loaderChar}</span>
+                        <span style={{ fontWeight: 500 }}>{msg.toolDisplayText}</span>
+                      </div>
                     </div>
+                    {isToolComplete && msg.toolResponse && typeof msg.toolResponse === 'object' && 'html' in msg.toolResponse && (
+                      <div style={{
+                        marginTop: '8px',
+                        width: '320px',
+                        height: '200px',
+                        backgroundColor: '#F5F5F5',
+                        border: '1px dashed #D1D1D6',
+                        borderRadius: '8px',
+                        animation: 'fadeIn 200ms ease-in-out'
+                      }}>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div style={{
@@ -399,57 +424,11 @@ export default function StreamMockup() {
           })}
         </div>
 
-        {/* Controls dock */}
-        <div style={{
-          position: 'absolute',
-          bottom: '16px',
-          right: '16px',
-          display: 'flex',
-          gap: '8px',
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          padding: '8px',
-          borderRadius: '8px',
-          border: '1px solid #ddd'
-        }}>
-          <button
-            onClick={togglePlayPause}
-            style={{
-              width: '32px',
-              height: '32px',
-              border: 'none',
-              borderRadius: '4px',
-              backgroundColor: '#007AFF',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            {isPlaying ? '⏸' : '▶'}
-          </button>
-          <button
-            onClick={reset}
-            style={{
-              width: '32px',
-              height: '32px',
-              border: 'none',
-              borderRadius: '4px',
-              backgroundColor: '#007AFF',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            ↻
-          </button>
-        </div>
-
-        <style jsx>{`
+        <style jsx global>{`
+          body {
+            margin: 0;
+            padding: 0;
+          }
           @keyframes slideUp {
             from {
               opacity: 0;
@@ -470,7 +449,58 @@ export default function StreamMockup() {
           }
         `}</style>
       </div>
-    </div>
+      
+      {/* Controls dock */}
+      <div style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        display: 'flex',
+        gap: '8px',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        padding: '8px',
+        borderRadius: '8px',
+        border: '1px solid #ddd'
+      }}>
+        <button
+          onClick={togglePlayPause}
+          style={{
+            width: '32px',
+            height: '32px',
+            border: 'none',
+            borderRadius: '4px',
+            backgroundColor: '#FFFFFF',
+            color: '#212529',
+            cursor: 'pointer',
+            fontSize: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          {isPlaying ? '⏸' : '▶'}
+        </button>
+        <button
+          onClick={reset}
+          style={{
+            width: '32px',
+            height: '32px',
+            border: 'none',
+            borderRadius: '4px',
+            backgroundColor: '#FFFFFF',
+            color: '#212529',
+            cursor: 'pointer',
+            fontSize: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          ↻
+        </button>
+      </div>
+      </div>
+    </>
   );
 }
 
