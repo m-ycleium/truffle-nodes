@@ -23,12 +23,17 @@ const conversation: ConversationStep[] = [
     text: 'Let me help you book an Uber to LAX. First, I need to determine your current location and then search for available rides. I\'ll check the Uber API for real-time pricing and availability. This will involve looking at different ride types like UberX, Uber Comfort, and Uber XL to give you options. I should also consider the estimated time of arrival and current traffic conditions to LAX to provide you with an accurate estimate.',
     modelResponseType: 'thinking',
   },
+  {
+    type: 'model',
+    text: 'I\'ll work on calling you a ride. I\'ll need to verify the exact addresses.',
+    modelResponseType: 'message',
+  },
 ];
 
 // Timing configuration (in milliseconds)
-const USER_DELAY = 800;
-const MODEL_DELAY = 600;
-const TOKENS_PER_SECOND = 100;
+const USER_DELAY = 500;
+const MODEL_DELAY = 100;
+const TOKENS_PER_SECOND = 144;
 
 // Thinking token library (braille alphabet)
 const THINKING_TOKEN_LIBRARY = [
@@ -61,6 +66,8 @@ export default function StreamMockup() {
   const streamPositionRef = useRef<number>(0);
   const isStreamingRef = useRef<boolean>(false);
   const thinkingTokenCountRef = useRef<number>(0);
+  const isDeletingRef = useRef<boolean>(false);
+  const deletePositionRef = useRef<number>(0);
 
   const reset = () => {
     setCurrentStepIndex(0);
@@ -70,6 +77,8 @@ export default function StreamMockup() {
     streamPositionRef.current = 0;
     isStreamingRef.current = false;
     thinkingTokenCountRef.current = 0;
+    isDeletingRef.current = false;
+    deletePositionRef.current = 0;
   };
 
   const togglePlayPause = () => {
@@ -113,13 +122,18 @@ export default function StreamMockup() {
       const isThinking = currentStep.modelResponseType === 'thinking';
       
       // Check if we need to initialize the message
+      let messageIndex = messages.length;
       if (messages.length <= currentStepIndex) {
         setMessages(prev => [...prev, { ...currentStep, fullText: '' }]);
         streamPositionRef.current = 0;
         thinkingTokenCountRef.current = 0;
+        isDeletingRef.current = false;
+        deletePositionRef.current = 0;
+      } else {
+        // Message already exists at this position
+        messageIndex = currentStepIndex;
       }
       
-      const messageIndex = currentStepIndex;
       let currentIndex = streamPositionRef.current;
 
       const streamNextToken = () => {
@@ -168,12 +182,48 @@ export default function StreamMockup() {
 
           timeoutRef.current = setTimeout(streamNextToken, msPerToken * charsToAdd);
         } else {
-          // Streaming complete, move to next step
-          streamPositionRef.current = 0;
-          thinkingTokenCountRef.current = 0;
-          timeoutRef.current = setTimeout(() => {
-            setCurrentStepIndex(prev => prev + 1);
-          }, MODEL_DELAY);
+          // Streaming complete
+          if (isThinking) {
+            // Start deletion animation for thinking messages
+            isDeletingRef.current = true;
+            deletePositionRef.current = THINKING_WINDOW_SIZE;
+            
+            const deleteNextChar = () => {
+              if (deletePositionRef.current > 0) {
+                deletePositionRef.current -= 1;
+                const displayText = generateThinkingDisplay(thinkingTokenCountRef.current, deletePositionRef.current);
+                
+                setMessages(prev => {
+                  const updated = [...prev];
+                  updated[messageIndex] = { ...currentStep, fullText: displayText };
+                  return updated;
+                });
+                
+                timeoutRef.current = setTimeout(deleteNextChar, msPerToken);
+              } else {
+                // Deletion complete - remove the message entirely
+                setMessages(prev => prev.slice(0, messageIndex));
+                streamPositionRef.current = 0;
+                thinkingTokenCountRef.current = 0;
+                isDeletingRef.current = false;
+                deletePositionRef.current = 0;
+                
+                // Move to next step - don't increment index since message was removed
+                timeoutRef.current = setTimeout(() => {
+                  setCurrentStepIndex(prev => prev + 1);
+                }, MODEL_DELAY);
+              }
+            };
+            
+            timeoutRef.current = setTimeout(deleteNextChar, MODEL_DELAY);
+          } else {
+            // Regular message - just move to next step
+            streamPositionRef.current = 0;
+            thinkingTokenCountRef.current = 0;
+            timeoutRef.current = setTimeout(() => {
+              setCurrentStepIndex(prev => prev + 1);
+            }, MODEL_DELAY);
+          }
         }
       };
 
@@ -226,30 +276,31 @@ export default function StreamMockup() {
               key={idx}
               style={{
                 alignSelf: msg.type === 'user' ? 'flex-end' : 'flex-start',
-                maxWidth: '80%',
+                maxWidth: msg.type === 'user' ? '80%' : '100%',
+                width: msg.type === 'user' ? 'auto' : '100%',
                 animation: msg.type === 'user' ? 'slideUp 0.3s ease-out' : 'none'
               }}
             >
-              <div style={{
-                padding: '10px 14px',
-                borderRadius: '12px',
-                backgroundColor: msg.type === 'user' ? '#007AFF' : '#E9ECEF',
-                color: msg.type === 'user' ? 'white' : '#212529',
-                fontSize: '14px',
-                lineHeight: '1.4'
-              }}>
-                {msg.modelResponseType === 'thinking' && (
-                  <div style={{
-                    fontSize: '11px',
-                    opacity: 0.7,
-                    marginBottom: '4px',
-                    fontStyle: 'italic'
-                  }}>
-                    thinking...
-                  </div>
-                )}
-                {msg.fullText}
-              </div>
+              {msg.type === 'user' ? (
+                <div style={{
+                  padding: '10px 14px',
+                  borderRadius: '12px',
+                  backgroundColor: '#007AFF',
+                  color: 'white',
+                  fontSize: '14px',
+                  lineHeight: '1.4'
+                }}>
+                  {msg.fullText}
+                </div>
+              ) : (
+                <div style={{
+                  fontSize: '14px',
+                  lineHeight: '1.4',
+                  color: '#212529'
+                }}>
+                  {msg.fullText}
+                </div>
+              )}
             </div>
           ))}
         </div>
