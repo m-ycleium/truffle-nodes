@@ -44,7 +44,7 @@ const conversation: ConversationStep[] = [
 
 // Timing configuration (in milliseconds)
 const USER_DELAY = 500;
-const MODEL_DELAY = 100;
+const MODEL_DELAY = 200;
 const TOKENS_PER_SECOND = 200;
 const TOOL_CHARS_PER_SECOND = 48; // Faster streaming for tool output
 
@@ -351,7 +351,7 @@ export default function StreamMockup() {
                   alignSelf: msg.type === 'user' ? 'flex-end' : 'flex-start',
                   maxWidth: msg.type === 'user' || msg.type === 'tool' ? '80%' : '100%',
                   width: msg.type === 'user' || msg.type === 'tool' ? 'auto' : '100%',
-                  animation: msg.type === 'user' ? 'slideUp 0.3s ease-out' : 'none'
+                  animation: msg.type === 'user' ? 'slideUp 0.3s ease-out' : msg.type === 'tool' ? 'fadeIn 0.3s ease-out' : 'none'
                 }}
               >
                 {msg.type === 'user' ? (
@@ -458,6 +458,14 @@ export default function StreamMockup() {
             to {
               opacity: 1;
               transform: translateY(0);
+            }
+          }
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
             }
           }
         `}</style>
