@@ -43,6 +43,76 @@ const conversation: ConversationStep[] = [
     isAppTool: false,
   },
   {
+    type: 'model',
+    text: 'I have confirmed the LAX address. Now I need to determine the pickup location. I should ask the user where they are currently located so I can provide accurate ride information including estimated time and cost. This is a critical piece of information for booking the ride.',
+    modelResponseType: 'thinking',
+  },
+  {
+    type: 'model',
+    text: 'Where are you located right now?',
+    modelResponseType: 'message',
+  },
+  {
+    type: 'user',
+    text: '30 palomino ln, bedford nh, 03110',
+  },
+  {
+    type: 'model',
+    text: 'The user has provided their pickup address as 30 Palomino Lane, Bedford, NH 03110. I need to verify this address exists and is valid before proceeding with the ride booking. I should search for this address to confirm it can be used as a pickup location.',
+    modelResponseType: 'thinking',
+  },
+  {
+    type: 'model',
+    text: 'I\'ll need to verify that address.',
+    modelResponseType: 'message',
+  },
+  {
+    type: 'tool',
+    text: '',
+    toolDisplayText: 'calling verify address',
+    toolTokenStream: 'Checking address validity... Geocoding location... Confirming service area... Address verified successfully.',
+    toolResponse: null,
+    isAppTool: true,
+  },
+  {
+    type: 'model',
+    text: 'Both addresses have been verified and are valid. I now have the complete trip information: pickup at 30 Palomino Lane, Bedford, NH 03110 and drop-off at LAX airport in Los Angeles. Before proceeding with the booking, I should confirm these details with the user to ensure accuracy.',
+    modelResponseType: 'thinking',
+  },
+  {
+    type: 'model',
+    text: 'I\'ll call you a ride from 30 Palomino Lane, Bedford, NH, 03110 to 1 World Way, Los Angeles, CA 90045. Does that look right to you?',
+    modelResponseType: 'message',
+  },
+  {
+    type: 'user',
+    text: 'yes',
+  },
+  {
+    type: 'model',
+    text: 'The user has confirmed the trip details. Now I need to collect payment information to complete the booking. I should ask for their preferred payment method to process the ride fare.',
+    modelResponseType: 'thinking',
+  },
+  {
+    type: 'model',
+    text: 'What\'s a good payment method for you?',
+    modelResponseType: 'message',
+  },
+  {
+    type: 'user',
+    text: '4242424242424242 exp 4/8/2028, 0352',
+  },
+  {
+    type: 'model',
+    text: 'Perfect. The user has provided payment information. I now have all the required details to book the ride: pickup location, destination, trip confirmation, and payment method. I can proceed with calling the book ride API to complete the reservation.',
+    modelResponseType: 'thinking',
+  },
+  {
+    type: 'model',
+    text: 'Okay I\'m going to call your uber now.',
+    modelResponseType: 'message',
+  },
+  {
     type: 'tool',
     text: '',
     toolDisplayText: 'calling book ride',
@@ -53,7 +123,7 @@ const conversation: ConversationStep[] = [
 ];
 
 // Timing configuration (in milliseconds)
-const USER_DELAY = 500;
+const USER_DELAY = 800;
 const MODEL_DELAY = 200;
 const TOKENS_PER_SECOND = 200;
 const TOOL_CHARS_PER_SECOND = 48; // Faster streaming for tool output
@@ -93,6 +163,7 @@ export default function StreamMockup() {
   const deletePositionRef = useRef<number>(0);
   const toolStreamPositionRef = useRef<number>(0);
   const toolLoaderCycleRef = useRef<number>(0);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const reset = () => {
     setCurrentStepIndex(0);
@@ -111,6 +182,11 @@ export default function StreamMockup() {
   const togglePlayPause = () => {
     setIsPlaying(!isPlaying);
   };
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   useEffect(() => {
     if (!isPlaying) {
@@ -425,6 +501,7 @@ export default function StreamMockup() {
               </div>
             );
           })}
+          <div ref={messagesEndRef} />
         </div>
 
         <style jsx global>{`
