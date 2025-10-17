@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { Inter } from 'next/font/google';
 
-type MessageType = 'user' | 'model';
+const inter = Inter({ subsets: ['latin'] });
+
+type MessageType = 'user' | 'model' | 'tool';
 type ModelResponseType = 'thinking' | 'message';
 type ToolCallResponse = null | string | { html: string };
 
@@ -10,7 +13,9 @@ interface ConversationStep {
   type: MessageType;
   text: string;
   modelResponseType?: ModelResponseType;
-  toolCall?: ToolCallResponse;
+  toolDisplayText?: string;
+  toolTokenStream?: string;
+  toolResponse?: ToolCallResponse;
 }
 
 const conversation: ConversationStep[] = [
@@ -28,12 +33,20 @@ const conversation: ConversationStep[] = [
     text: 'I\'ll work on calling you a ride. I\'ll need to verify the exact addresses.',
     modelResponseType: 'message',
   },
+  {
+    type: 'tool',
+    text: '',
+    toolDisplayText: 'searching "LAX Address"',
+    toolTokenStream: 'Los Angeles International Airport (LAX) is located at 1 World Way, Los Angeles, CA 90045. The main terminal complex is accessible via multiple entrances. Airport information: open 24 hours, multiple terminals (1-8), transportation options available.',
+    toolResponse: null,
+  },
 ];
 
 // Timing configuration (in milliseconds)
 const USER_DELAY = 500;
 const MODEL_DELAY = 100;
-const TOKENS_PER_SECOND = 144;
+const TOKENS_PER_SECOND = 200;
+const TOOL_CHARS_PER_SECOND = 48; // Faster streaming for tool output
 
 // Thinking token library (braille alphabet)
 const THINKING_TOKEN_LIBRARY = [
@@ -68,6 +81,8 @@ export default function StreamMockup() {
   const thinkingTokenCountRef = useRef<number>(0);
   const isDeletingRef = useRef<boolean>(false);
   const deletePositionRef = useRef<number>(0);
+  const toolStreamPositionRef = useRef<number>(0);
+  const toolLoaderCycleRef = useRef<number>(0);
 
   const reset = () => {
     setCurrentStepIndex(0);
@@ -79,6 +94,8 @@ export default function StreamMockup() {
     thinkingTokenCountRef.current = 0;
     isDeletingRef.current = false;
     deletePositionRef.current = 0;
+    toolStreamPositionRef.current = 0;
+    toolLoaderCycleRef.current = 0;
   };
 
   const togglePlayPause = () => {
@@ -115,7 +132,56 @@ export default function StreamMockup() {
       timeoutRef.current = setTimeout(() => {
         setCurrentStepIndex(prev => prev + 1);
       }, USER_DELAY);
-    } else {
+    } else if (currentStep.type === 'tool') {
+      // Tool call streaming
+      const toolStream = currentStep.toolTokenStream || '';
+      const msPerChar = 1000 / TOOL_CHARS_PER_SECOND;
+      
+      // Check if we need to initialize the message
+      let messageIndex = messages.length;
+      if (messages.length <= currentStepIndex) {
+        setMessages(prev => [...prev, { ...currentStep, fullText: '' }]);
+        toolStreamPositionRef.current = 0;
+        toolLoaderCycleRef.current = 0;
+      } else {
+        messageIndex = currentStepIndex;
+      }
+      
+      let currentIndex = toolStreamPositionRef.current;
+      const isComplete = currentIndex >= toolStream.length;
+
+      const streamNextChar = () => {
+        if (currentIndex < toolStream.length) {
+          currentIndex += 1;
+          toolStreamPositionRef.current = currentIndex;
+          toolLoaderCycleRef.current += 1;
+          
+          const displayText = toolStream.slice(0, currentIndex);
+          
+          setMessages(prev => {
+            const updated = [...prev];
+            updated[messageIndex] = { ...currentStep, fullText: displayText };
+            return updated;
+          });
+
+          timeoutRef.current = setTimeout(streamNextChar, msPerChar);
+        } else {
+          // Streaming complete, mark as finished
+          toolStreamPositionRef.current = 0;
+          toolLoaderCycleRef.current = 0;
+          
+          timeoutRef.current = setTimeout(() => {
+            setCurrentStepIndex(prev => prev + 1);
+          }, MODEL_DELAY);
+        }
+      };
+
+      // Start streaming if not complete
+      if (!isComplete) {
+        const delay = toolStreamPositionRef.current === 0 ? MODEL_DELAY : 0;
+        timeoutRef.current = setTimeout(streamNextChar, delay);
+      }
+    } else if (currentStep.type === 'model') {
       // Model message streams in
       const fullText = currentStep.text;
       const msPerToken = 1000 / TOKENS_PER_SECOND;
@@ -243,7 +309,7 @@ export default function StreamMockup() {
   }, [currentStepIndex, isPlaying]);
 
   return (
-    <div style={{ 
+    <div className={inter.className} style={{ 
       display: 'flex', 
       justifyContent: 'center', 
       alignItems: 'center', 
@@ -271,38 +337,66 @@ export default function StreamMockup() {
           flexDirection: 'column',
           gap: '12px'
         }}>
-          {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              style={{
-                alignSelf: msg.type === 'user' ? 'flex-end' : 'flex-start',
-                maxWidth: msg.type === 'user' ? '80%' : '100%',
-                width: msg.type === 'user' ? 'auto' : '100%',
-                animation: msg.type === 'user' ? 'slideUp 0.3s ease-out' : 'none'
-              }}
-            >
-              {msg.type === 'user' ? (
-                <div style={{
-                  padding: '10px 14px',
-                  borderRadius: '12px',
-                  backgroundColor: '#007AFF',
-                  color: 'white',
-                  fontSize: '14px',
-                  lineHeight: '1.4'
-                }}>
-                  {msg.fullText}
-                </div>
-              ) : (
-                <div style={{
-                  fontSize: '14px',
-                  lineHeight: '1.4',
-                  color: '#212529'
-                }}>
-                  {msg.fullText}
-                </div>
-              )}
-            </div>
-          ))}
+          {messages.map((msg, idx) => {
+            const isToolComplete = msg.type === 'tool' && msg.fullText === msg.toolTokenStream;
+            // Cycle loader based on how much of the stream has been shown
+            const loaderIndex = msg.type === 'tool' ? Math.floor(msg.fullText.length / 5) : 0;
+            const loaderChar = msg.type === 'tool' ? 
+              (isToolComplete ? '⠿' : THINKING_TOKEN_LIBRARY[loaderIndex % THINKING_TOKEN_LIBRARY.length]) : '';
+            
+            return (
+              <div
+                key={idx}
+                style={{
+                  alignSelf: msg.type === 'user' ? 'flex-end' : 'flex-start',
+                  maxWidth: msg.type === 'user' || msg.type === 'tool' ? '80%' : '100%',
+                  width: msg.type === 'user' || msg.type === 'tool' ? 'auto' : '100%',
+                  animation: msg.type === 'user' ? 'slideUp 0.3s ease-out' : 'none'
+                }}
+              >
+                {msg.type === 'user' ? (
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: '12px',
+                    backgroundColor: '#007AFF',
+                    color: 'white',
+                    fontSize: '14px',
+                    lineHeight: '1.4'
+                  }}>
+                    {msg.fullText}
+                  </div>
+                ) : msg.type === 'tool' ? (
+                  <div style={{
+                    padding: '6px 10px',
+                    borderRadius: '8px',
+                    backgroundColor: '#E9ECEF',
+                    color: '#212529',
+                    fontSize: '13px',
+                    lineHeight: '1.4',
+                    opacity: isToolComplete ? 0.5 : 1,
+                    transition: 'opacity 200ms ease-in-out'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}>
+                      <span style={{ fontSize: '14px', flexShrink: 0 }}>{loaderChar}</span>
+                      <span style={{ fontWeight: 500 }}>{msg.toolDisplayText}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{
+                    fontSize: '14px',
+                    lineHeight: '1.4',
+                    color: '#212529'
+                  }}>
+                    {msg.fullText}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Controls dock */}
