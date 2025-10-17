@@ -371,7 +371,8 @@ export default function StreamMockup() {
                     backgroundColor: '#FFFFFF',
                     color: '#212529',
                     fontSize: '14px',
-                    lineHeight: '1.4'
+                    lineHeight: '1.4',
+                    fontWeight: 300
                   }}>
                     {msg.fullText}
                   </div>
@@ -394,7 +395,7 @@ export default function StreamMockup() {
                         gap: '6px'
                       }}>
                         <span style={{ fontSize: '14px', flexShrink: 0 }}>{loaderChar}</span>
-                        <span style={{ fontWeight: 500 }}>{msg.toolDisplayText}</span>
+                        <span style={{ fontWeight: 300 }}>{msg.toolDisplayText}</span>
                       </div>
                     </div>
                     {isToolComplete && msg.toolResponse && typeof msg.toolResponse === 'object' && 'html' in msg.toolResponse && (
@@ -412,9 +413,11 @@ export default function StreamMockup() {
                   </div>
                 ) : (
                   <div style={{
-                    fontSize: '14px',
+                    fontSize: msg.modelResponseType === 'thinking' ? '18px' : '14px',
                     lineHeight: '1.4',
-                    color: '#212529'
+                    color: '#212529',
+                    fontWeight: msg.modelResponseType === 'thinking' ? 400 : 300,
+                    letterSpacing: msg.modelResponseType === 'thinking' ? '0.4em' : ''
                   }}>
                     {msg.fullText}
                   </div>
@@ -428,6 +431,7 @@ export default function StreamMockup() {
           body {
             margin: 0;
             padding: 0;
+            overflow: hidden;
           }
           @keyframes slideUp {
             from {
